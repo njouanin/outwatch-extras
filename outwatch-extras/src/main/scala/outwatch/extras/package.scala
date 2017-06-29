@@ -1,6 +1,6 @@
 package outwatch
 
-import rxscalajs.Observable
+import monix.reactive.Observable
 
 /**
   * Created by marius on 25/06/17.

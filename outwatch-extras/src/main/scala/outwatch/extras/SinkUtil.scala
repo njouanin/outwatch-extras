@@ -2,6 +2,7 @@ package outwatch.extras
 
 import outwatch.Sink
 import outwatch.dom.Handlers
+import monix.execution.Scheduler.Implicits.global
 
 /**
   * Created by marius on 25/06/17.

@@ -1,6 +1,8 @@
 package demo
 
 import demo.styles._
+import monix.reactive.Observable
+import monix.execution.Scheduler.Implicits.global
 import org.scalajs.dom
 import org.scalajs.dom.console
 import outwatch.Sink
@@ -8,8 +10,8 @@ import outwatch.dom.VNode
 import outwatch.extras._
 import outwatch.router.{BaseUrl, Router => OutwatchRouter}
 import outwatch.styles.Styles
-import rxscalajs.Observable
 
+import scala.concurrent.duration._
 import scala.scalajs.js.{Date, JSApp}
 import scala.util.Random
 import scalacss.DevDefaults._
@@ -81,10 +83,10 @@ object TextField extends TextFieldStyle {
 
     val disabledValues = inputTodo
       .map(_.length < minLen)
-      .startWith(true)
+      .startWith(Seq(true))
 
     val filterSinkDisabled = (act: Observable[String]) =>
-      act.withLatestFrom(disabledValues)
+      act.withLatestFrom(disabledValues)((a,b) => (a,b))
         .filter(x => !x._2)
         .map(_._1)
 
@@ -223,6 +225,7 @@ object TodoComponent extends Component {
   }
 
   def apply(initActions: Action*): VNode = {
+    console.log("In todo component")
     view(createStore(initActions))
   }
 
@@ -275,7 +278,7 @@ object Console extends Effects {
 
   def effects: Effect => Observable[EffectResult] = {
     case Log(str) =>
-      Observable.just(Output(str)).delay(1000)
+      Observable(Output(str)).delayOnNext(1000.millis)
   }
 }
 
@@ -284,9 +287,24 @@ object DemoApp extends JSApp {
 
   import outwatch.dom.OutWatch
 
+
+
+  def test() : VNode = {
+    import outwatch.dom._
+
+    val handler = createStringHandler()
+
+    div(
+      input(inputString --> handler),
+      span("you typed", child <-- handler)
+    )
+
+
+  }
+
   def main(): Unit = {
     Styles.subscribe(_.addToDocument())
 
-    OutWatch.render("#app", Router())
+    OutWatch.render("#app", test())
   }
 }

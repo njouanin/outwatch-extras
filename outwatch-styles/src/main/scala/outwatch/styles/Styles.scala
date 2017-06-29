@@ -1,19 +1,39 @@
 package outwatch.styles
 
-import rxscalajs.Subject
-import rxscalajs.subscription.Subscription
+import monix.execution.Ack.{Continue, Stop}
+import monix.execution.{Ack, Cancelable}
+import monix.reactive.subjects.PublishSubject
+import monix.execution.Scheduler.Implicits.global
 
+import scala.concurrent.Future
 import scalacss.defaults.Exports.StyleSheet
 
 /**
   * Created by marius on 11/06/17.
   */
 object Styles {
-  private val styles = Subject[StyleSheet.Inline]()
+  private val styles = PublishSubject[StyleSheet.Inline]()
 
-  def publish(ss: StyleSheet.Inline): Unit = styles.next(ss)
+  private var published: Future[Ack] = Future.successful(Continue)
 
-  def subscribe(f: StyleSheet.Inline => Unit): Subscription = styles.subscribe(f)
+  def publish(ss: StyleSheet.Inline): Future[Ack] = {
+    published.synchronized {
+      published = published.flatMap {
+        case Continue =>
+          styles.onNext(ss)
+        case Stop =>
+          Stop
+      }
+    }
+    published
+  }
+
+  def subscribe(f: StyleSheet.Inline => Unit): Cancelable = {
+    styles.subscribe { s =>
+      f(s)
+      Continue
+    }
+  }
 
   trait Publish { self: StyleSheet.Inline =>
     publish(self)

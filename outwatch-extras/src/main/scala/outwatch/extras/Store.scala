@@ -1,9 +1,8 @@
 package outwatch.extras
 
+import monix.reactive.Observable
 import outwatch.Sink
-import rxscalajs.Observable
-import rxscalajs.subscription.Subscription
-
+import monix.execution.Scheduler.Implicits.global
 import scala.language.implicitConversions
 
 /**
@@ -11,11 +10,9 @@ import scala.language.implicitConversions
   */
 final case class Store[State, Action](source: Observable[State], sink: Sink[Action]) {
 
-  def subscribe(f: State => Unit): Subscription = source.subscribe(f)
-
   def share: Store[State, Action] = Store(source.share, sink)
 
-  def shareReplay(count: Int = 1) = Store(source.publishReplay(1).refCount, sink)
+  def shareReplay(count: Int = 1) = Store(source.replay(1).refCount, sink)
 }
 
 object Store {
@@ -32,7 +29,7 @@ object Store {
 
     val source: Observable[State] = handler
       .scan(initialState)(reducer)
-      .startWith(initialState)
+      .startWith(Seq(initialState))
 
     apply(source, handler)
   }
@@ -44,9 +41,9 @@ object Store {
     reducer: (State, Action) => State
   ): Store[State, Action] = {
 
-    val source: Observable[State] = handler.merge(actionSource)
+    val source: Observable[State] = Observable(handler,actionSource).merge
       .scan(initialState)(reducer)
-      .startWith(initialState)
+      .startWith(Seq(initialState))
 
     apply(source, handler)
   }

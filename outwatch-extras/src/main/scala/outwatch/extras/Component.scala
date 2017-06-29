@@ -1,8 +1,8 @@
 package outwatch.extras
 
+import monix.reactive.Observable
 import outwatch.Sink
 import outwatch.dom.Handlers
-import rxscalajs.Observable
 
 
 /**

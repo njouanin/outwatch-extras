@@ -16,7 +16,7 @@ inThisBuild(Seq(
 )
 )
 
-val outwatchVersion = "0.10.1-SNAPSHOT"
+val outwatchVersion = "0.10.1-monix-SNAPSHOT"
 
 val noPublish = Seq(
   publishArtifact := false,

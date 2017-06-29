@@ -1,8 +1,9 @@
 package outwatch.extras
 
+import monix.reactive.Observable
+import monix.execution.Scheduler.Implicits.global
 import outwatch.Sink
 import outwatch.dom.Handlers
-import rxscalajs.Observable
 
 /**
   * Created by marius on 26/06/17.
